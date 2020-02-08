@@ -198,6 +198,16 @@ class Wechatbanner extends Controller
     }
 
     public function shopsublist() {
+        $request = request();
+        $user = $request->param('user');
+        $password = $request->param('password');
+        $check_user_result = $this->check_user_pwd($user,$password);
+        if($check_user_result == false) {
+            $result['code'] = 1;
+            $result['success'] = false;
+            $result['msg'] = '账户密码不对';
+            return json($result);
+        }
         $result = array();
         $data = db('shopsublist')->select();
         $shopsub = new shopsub();
@@ -218,16 +228,36 @@ class Wechatbanner extends Controller
     }
 
     public function category() {
+        $request = request();
+        $user = $request->param('user');
+        $password = $request->param('password');
+        $check_user_result = $this->check_user_pwd($user,$password);
+        if($check_user_result == false) {
+            $result['code'] = 1;
+            $result['success'] = false;
+            $result['msg'] = '账户密码不对';
+            return json($result);
+        }
         $categories = new categories();
-        $data = db('categories')->where('user','admincdz')->where('status' ,'1')->order('sort asc')->select();
+        $data = db('categories')->where('user',$user)->where('status' ,'1')->order('sort asc')->select();
         $categories->set_data($data);
         $categories->set_result('0','sucess');
         return json($categories);
     }
 
     public function goods_list() {
+        $request = request();
+        $user = $request->param('user');
+        $password = $request->param('password');
+        $check_user_result = $this->check_user_pwd($user,$password);
+        if($check_user_result == false) {
+            $result['code'] = 1;
+            $result['success'] = false;
+            $result['msg'] = '账户密码不对';
+            return json($result);
+        }
         $goods = new goods();
-        $data = db('wechat_goods_list')->where('user','admincdz')->where('status' , '1')->select();
+        $data = db('wechat_goods_list')->where('user',$user)->where('status' , '1')->select();
         $goods->set_result(0,'goodsdata');
         $goods->set_data($data);
         return json($goods);
