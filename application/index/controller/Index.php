@@ -22,7 +22,7 @@ class Index
           $result['msg'] = "该账号不存在";
           return $result;
         }
-        if($userdata['passwd'] == $passwd) {
+        if($userdata['md5passwd'] == $passwd) {
           $result['success'] = true;
           $result['msg'] = "登录成功";
           session('user', $userdata['user_name']);
@@ -78,7 +78,7 @@ class Index
       $email = $request->param('email');
       $verify_code = $this->get_random_code();
       $redis = new Redis();
-      $redis->set($email,$verify_code,60);      
+      $redis->set($email,$verify_code,60);
       $mail = new Mail();
       $mail->title = "欢迎注册阿萨德";
       $mail->send_mail = $email;

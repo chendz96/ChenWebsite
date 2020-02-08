@@ -41,7 +41,8 @@
     </body>
 
     <script src="/static/plugins/layui-v2.5.4/layui/layui.js"></script>
-    <script src="http://apps.bdimg.com/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
+    <script src="/static/plugins/md5.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
     <script src="/static/jquery-login-20150514/js/supersized.3.2.7.min.js"></script>
     <script src="/static/jquery-login-20150514/js/supersized-init.js"></script>
     <script type="text/javascript">
@@ -81,7 +82,10 @@
               $.ajax({
                   url: $('#form').attr('action'),
                   type: "POST",
-                  data: $('#form').serialize(),
+                  data: {
+                    account:$('#account').val(),
+                    password:hex_md5($('#password').val())
+                  },
                   success:function(data){
                       layer.close(index);
                       if (data.success) {
