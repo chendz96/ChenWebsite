@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Chen的网站</title>
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/plugins/layui-v2.5.4/layui/css/layui.css">
+  </head>
+  <body>
+
+    <style type="text/css">
+            .layui-table-cell {
+                height: auto;
+                line-height: 28px;
+            }
+    </style>
+
+    <blockquote class="layui-elem-quote layui-text">
+      生活安全常识
+    </blockquote>
+    <button class="layui-btn layui-btn-sm" id="add">添加标题</button>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="table" lay-filter="table"></table>
+        </div>
+    </div>
+
+    <blockquote class="layui-elem-quote layui-text">
+      生活安全常识文字简介
+    </blockquote>
+    <button class="layui-btn layui-btn-sm" id="add_text">添加内容</button>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="table" lay-filter="table"></table>
+        </div>
+    </div>
+
+    <blockquote class="layui-elem-quote layui-text">
+      生活安全常识图片
+    </blockquote>
+    <button class="layui-btn layui-btn-sm" id="add_pic">添加图片</button>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="pictable" lay-filter="pictable"></table>
+        </div>
+    </div>
+
+
+  </body>
+
+  <script src="/static/plugins/layui-v2.5.4/layui/layui.js"></script>
+  <script src="/static/js/common.js?v=11"></script>
+  <script src="/static/js/oper.js"></script>
+  <script type="text/javascript">
+
+      layui.use(['element', 'table', 'layer'], function(){
+        var layer = layui.layer;
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        var mytable = table.render({
+            elem: '#table',
+            url: '/index/Wechatlifesafe/get_page_data',
+            height: 'auto',
+            page: true,
+            limit: 10,
+            id: 'id',
+            cols:  [[
+                {field: 'title', title: '标题', width: '20%', align: 'center'},
+                {field: 'sort', title: '顺序', width: '15%',align: 'center'},
+                {field: 'status', title: '状态', width: '15%',align: 'center',templet: '#status'},
+                {fixed: 'right', title:'管理', width: '34%',toolbar: '#manger'}
+            ]],
+            done: function(res, curr, count){
+
+            }
+        });
+
+        var pic_table = table.render({
+            elem: '#pictable',
+            url: '/index/Wechatlifesafe/get_page_pic',
+            height: 'auto',
+            page: true,
+            limit: 10,
+            id: 'id',
+            cols:  [[
+                {field: 'pic', title: '图片', width: '30%', align: 'center',templet:'#imgTpl'},
+                {field: 'sort', title: '顺序', width: '15%',align: 'center'},
+                {field: 'status', title: '状态', width: '15%',align: 'center',templet: '#status'},
+                {fixed: 'right', title:'管理', width: '30%',toolbar: '#pic_manger'}
+            ]],
+            done: function(res, curr, count){
+
+            }
+        });
+
+        $("#add_pic").click(function() {
+            add(layer,'添加生活安全常识图片','/index/Wechatlifesafe/add_pic',"480px","500px",function(){
+              pic_table.reload();
+            });
+        });
+
+        $("#add_text").click(function() {
+            add(layer,'添加生活安全常识文字简介','/index/Wechatlifesafe/add_text',"480px","500px",function(){
+              pic_table.reload();
+            });
+        });
+
+        $("#add").click(function() {
+            add(layer,'添加生活安全常识标题','/index/Wechatlifesafe/add_page',"480px","300px",function(){
+              mytable.reload();
+            });
+        });
+
+        //监听行工具事件
+        table.on('tool(table)', function(obj){
+          var data = obj.data;
+          var id = obj.data.id;
+          if(obj.event === 'del'){
+            layer.confirm('真的删除么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodsinfo/del_categories',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else if(obj.event === 'sort') {
+            add(layer,'调整商品分类顺序','/index/Wechatgoodsinfo/adjust_categories_order/id/'+id,"480px","300px",function(){
+              mytable.reload();
+            });
+          }
+          else if(obj.event === 'disable'){
+            layer.confirm('真的停用么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodsinfo/disable_categories',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else {
+            layer.confirm('真的恢复么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodsinfo/able_categories',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+        });
+
+        //监听图片工具管理事件
+        table.on('tool(pictable)', function(obj){
+          var data = obj.data;
+
+          if(obj.event === 'del'){
+            layer.confirm('真的删除么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatlifesafe/manger_pic/flag/del',
+                  type: "POST",
+                  data: "id=" + obj.data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      pic_table.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else if(obj.event === 'sort') {
+            add(layer,'调整图片顺序','/index/Wechatlifesafe/adjust_pic_order/id/'+data.id,"480px","300px",function(){
+              pic_table.reload();
+            });
+          }
+          else if(obj.event === 'disable'){
+            layer.confirm('真的停用么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatlifesafe/manger_pic/flag/disable',
+                  type: "POST",
+                  data: "id=" + obj.data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      pic_table.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else {
+            layer.confirm('真的恢复么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatlifesafe/manger_pic/flag/able',
+                  type: "POST",
+                  data: "id=" + obj.data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      pic_table.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+        });
+
+
+
+      });
+  </script>
+
+  <script type="text/html" id="status">
+    {{#  if(d.status == '0'){ }}
+    <span style="color:red">停用</span>
+    {{#  } else if(d.status == '1') { }}
+      <span style="color:green">正常</span>
+    {{#  } else { }}
+      <span style="color:red">未知</span>
+    {{#  } }}
+  </script>
+
+  <script type="text/html" id="imgTpl">
+    <img src="{{ d.url }}">
+  </script>
+
+  <script type="text/html" id="manger">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="sort">调序</button>
+      <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
+      <button class="layui-btn layui-btn-sm" lay-event="disable">停用</button>
+      <button class="layui-btn layui-btn-sm" lay-event="able">恢复</button>
+    </div>
+  </script>
+
+  <script type="text/html" id="pic_manger">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="sort">调序</button>
+      <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
+      <button class="layui-btn layui-btn-sm" lay-event="disable">停用</button>
+      <button class="layui-btn layui-btn-sm" lay-event="able">恢复</button>
+    </div>
+  </script>
+
+</html>

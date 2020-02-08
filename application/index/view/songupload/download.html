@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>奥术大师</title>
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/plugins/layui-v2.5.4/layui/css/layui.css">
+  </head>
+  <body>
+    <button type="button" id="httpstest" class="layui-btn" name="button">http测试</button>
+    <blockquote class="layui-elem-quote layui-text">
+      文件管理
+    </blockquote>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="table" lay-filter="table"></table>
+        </div>
+    </div>
+
+
+  </body>
+
+  <script src="/static/plugins/layui-v2.5.4/layui/layui.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script type="text/javascript">
+
+      layui.use(['element', 'table', 'layer'], function(){
+        var layer = layui.layer;
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        var mytable = table.render({
+            elem: '#table',
+            url: '/index/songupload/get_data',
+            height: 'auto',
+            page: true,
+            limit: 10,
+            id: 'id',
+            cols:  [[
+                {type:'numbers', width:'5%'},
+                {field: 'file_name', title: '文件名称', width: '41%', align: 'center'},
+                {field: 'upload_time', sort:true, title: '上传时间', width: '15%',align: 'center',templet: '#tpl_upload_time'},
+                {field: 'file_size', sort:true,title: '文件大小', width: '15%',align: 'center',templet: function renderSize(d) {
+                     if(null==d.file_size||d.file_size==''){
+                         return "0 Bytes";
+                     }
+                     var unitArr = new Array("Bytes","KB","MB","GB","TB","PB","EB","ZB","YB");
+                     var index=0;
+                     var srcsize = parseFloat(d.file_size);
+                     index=Math.floor(Math.log(srcsize)/Math.log(1024));
+                     var size =srcsize/Math.pow(1024,index);
+                     size=size.toFixed(2);//保留的小数位数
+                     return size+unitArr[index];
+                }},
+                {fixed: 'right', title:'文件管理', toolbar: '#download', width:150}
+            ]],
+            done: function(res, curr, count){
+
+            }
+        });
+
+        $('#httpstest').click(function() {
+              $.ajax({
+                url: '/index/Httpclient/client',
+                type: "POST",
+                success:function(data){
+                    if (data.success == false) {
+
+                    } else {
+                    }
+
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                }
+            });
+        });
+
+        $("#btn").click(function() {
+            $.ajax({
+              url: '/index/songupload/synchronous_devsn_chuanyun',
+              type: "POST",
+              success:function(data){
+                  if (data.success == false) {
+
+                  } else {
+                  }
+
+              },
+              error: function(XMLHttpRequest, textStatus, errorThrown){
+                  layer.alert('服务器错误,请重新输入！', {icon: 2});
+              }
+          });
+        });
+
+        //监听排序事件
+        table.on('sort(table)', function(obj){ //注：sort 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+          //尽管我们的 table 自带排序功能，但并没有请求服务端。
+          //有些时候，你可能需要根据当前排序的字段，重新向服务端发送请求，从而实现服务端排序，如：
+          mytable.reload({
+            initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态。
+            ,where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+              field: obj.field //排序字段
+              ,order: obj.type //排序方式
+            },
+            page: {
+                curr: 1
+            }
+          });
+
+        });
+
+        //监听行工具事件
+        table.on('tool(table)', function(obj){
+          var data = obj.data;
+          if(obj.event === 'download'){
+            layer.confirm('真的下载么', {icon: 3, title:'提示'},function(index){
+              //obj.del();
+              var url = '/index/songupload/download_file/id/' + data.id;
+              window.location.href = url;
+              layer.close(index);
+            });
+          } else if(obj.event === 'del') {
+            layer.confirm('真的删除么',{icon: 3, title:'提示'}, function(index){
+              $.ajax({
+                url: '/index/songupload/del_file',
+                type: "POST",
+                data: "id=" + data.id,
+                success:function(data){
+                    if (data.success == false) {
+                        layer.msg('删除失败', {icon: 2, anim: 6});
+                    } else {
+                        layer.msg('删除成功!', {icon: 1, anim: 6});
+                        obj.del();
+                    }
+
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                }
+            });
+            });
+          }
+        });
+
+      });
+  </script>
+
+<script type="text/html" id="download">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="download">下载</button>
+    <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
+  </div>
+</script>
+
+
+  <script type="text/html" id="tpl_upload_time">
+    {{#  { }}
+    {{ formatDateTime(d.upload_time) }}
+    {{#  } }}
+  </script>
+
+</html>

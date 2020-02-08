@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='utf-8'?><wsdl:definitions name="RobotWebServiceImplService" targetNamespace="http://robot.server.webService/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://robot.server.webService/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+<!--schema才是关键，注意类型的寻址，下面是xs开头的，意思是这些类型到xmlns:xs=里面找-->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://robot.server.webService/" xmlns:tns="http://robot.server.webService/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!--设计一个复杂的数据类型standPointInfo-->
+  <xs:complexType name="standPointInfo">
+  <!--sequence是顺序限制-->
+  <!--<minOccurs> 指示器可规定某个元素能够出现的最小次数-->
+    <xs:sequence>
+      <xs:element minOccurs="0" name="POINTDES" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="STANDPOINT" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="STOR_TYPE" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="WH_NO" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="webServiceResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="INFO" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="STATUS" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="taskResultInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="EXEC_STATE" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="PICTURE" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="TASK_NO" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="inventoryResultInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="CCDD" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="CCLX" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="CKH" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="CW" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="GC" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="KCLX" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="KCSL" type="xs:double"></xs:element>
+      <xs:element minOccurs="0" name="PC" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="PDCY" type="xs:double"></xs:element>
+      <xs:element minOccurs="0" name="PDSJ" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="PDSL" type="xs:double"></xs:element>
+      <xs:element minOccurs="0" name="RWH" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="TSKCBH" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="TSKCLX" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="WLBH" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="WZSFM" type="xs:string"></xs:element>
+      <xs:element minOccurs="0" name="ZHXM" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType final="#all" name="standPointInfoArray">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="tns:standPointInfo"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType final="#all" name="inventoryResultInfoArray">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="tns:inventoryResultInfo"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="Exception" type="tns:Exception"></xs:element>
+  <xs:complexType name="Exception">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="message" type="xs:string"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+</wsdl:types>
+
+<!--<message> 元素将数据（数据类型在 <types> 元素中进行定义）分组成一个用于逻辑网络传输的特征符，并将数据绑定到一个名称上-->
+<!--上面的name用于operation引用，下面的name是声明的实例-->
+  <wsdl:message name="receiveInventoryResult">
+    <wsdl:part name="InventoryResult" type="tns:inventoryResultInfoArray">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="receiveTaskResult">
+    <wsdl:part name="TaskResultInfo" type="tns:taskResultInfo">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="receiveStandPointInfoResponse">
+    <wsdl:part name="return" type="tns:webServiceResult">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="receiveInventoryResultResponse">
+    <wsdl:part name="return" type="tns:webServiceResult">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="receiveTaskResultResponse">
+    <wsdl:part name="return" type="tns:webServiceResult">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="receiveStandPointInfo">
+    <wsdl:part name="StandPointInfos" type="tns:standPointInfoArray">
+    </wsdl:part>
+  </wsdl:message>
+
+  <wsdl:message name="Exception">
+    <wsdl:part element="tns:Exception" name="Exception">
+    </wsdl:part>
+  </wsdl:message>
+
+<!---相当于 Java 中的接口-->
+<!---它将对 <message> 元素的引用分组成逻辑操作，一个进程可以对另一个进程执行这些操作，并将它们绑定到一个名称-->
+  <wsdl:portType name="RobotWebService">
+
+<!---<input> 元素声明客户机向 Web 服务请求传输的需求。<output> 声明 Web 服务响应的内容。<fault> 元素描述当 Web 服务设法响应客户机的请求时所发生的任何消息级异常-->
+    <wsdl:operation name="receiveStandPointInfo">
+      <wsdl:input message="tns:receiveStandPointInfo" name="receiveStandPointInfo"></wsdl:input>
+      <wsdl:output message="tns:receiveStandPointInfoResponse" name="receiveStandPointInfoResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="receiveTaskResult">
+      <wsdl:input message="tns:receiveTaskResult" name="receiveTaskResult"></wsdl:input>
+      <wsdl:output message="tns:receiveTaskResultResponse" name="receiveTaskResultResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="receiveInventoryResult">
+      <wsdl:input message="tns:receiveInventoryResult" name="receiveInventoryResult">
+    </wsdl:input>
+      <wsdl:output message="tns:receiveInventoryResultResponse" name="receiveInventoryResultResponse">
+    </wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception">
+    </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!--到这里，上面的定义什么的都是抽象的，binding将这些抽象的钩接点与 Web 协议束缚起来-->
+  <!--描述绑定的元素嵌套在 <binding> 元素的这些子元素之中，这是为了将消息传递协议的详细内容链接到目标 portType 中所提到的通则上。-->
+  <wsdl:binding name="RobotWebServiceImplServiceSoapBinding" type="tns:RobotWebService">
+    <!--创建 SOAP 绑定-->
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="receiveStandPointInfo">
+    <!--soapAction，在 SOAP 1.2 中，不赞成使用这个头，而赞成将请求中的请求目的声明为一个参数，称作“action”。因而通常就让这个头空着。-->
+      <soap:operation soapAction="" style="rpc"></soap:operation>
+      <!--输入值中，除了出错数据应当包含在 SOAP <Fault> 元素中之外，其它所有消息都将包含在常规的 SOAP <Body> 元素中-->
+      <wsdl:input name="receiveStandPointInfo"><soap:body namespace="http://robot.server.webService/" use="literal"></soap:body></wsdl:input>
+      <wsdl:output name="receiveStandPointInfoResponse"><soap:body namespace="http://robot.server.webService/" use="literal"></soap:body></wsdl:output>
+      <wsdl:fault name="Exception"><soap:fault name="Exception" use="literal"></soap:fault></wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="receiveInventoryResult">
+      <soap:operation soapAction="" style="rpc"></soap:operation>
+      <wsdl:input name="receiveInventoryResult">
+        <soap:body namespace="http://robot.server.webService/" use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output name="receiveInventoryResultResponse">
+        <soap:body namespace="http://robot.server.webService/" use="literal"></soap:body>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+
+    <!--literal 编码的优点是没有对正在传输的 XML 文档作任何限制。它的编码依赖于模式，因此是完全可扩展的。-->
+    <wsdl:operation name="receiveTaskResult">
+      <soap:operation soapAction="" style="rpc"></soap:operation>
+      <wsdl:input name="receiveTaskResult">
+        <soap:body namespace="http://robot.server.webService/" use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output name="receiveTaskResultResponse">
+        <soap:body namespace="http://robot.server.webService/" use="literal"></soap:body>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"></soap:fault>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <!--将某个具体的绑定与网络上的一个或多个进程相关联，这些进程可以根据绑定所实现的 portType 来处理请求-->
+  <!--文档样式的消息传递表示 SOAP <Body> 元素的内容是任意的 XML 文档。-->
+  <!--尽管可以在请求-响应类型的通信方案中使用文档样式的消息传递，但是在异步通信中使用它非常理想，因为这个自包含的 XML 文档可以放入队列等待处理。-->
+  <wsdl:service name="RobotWebServiceImplService">
+    <wsdl:port binding="tns:RobotWebServiceImplServiceSoapBinding" name="RobotWebServiceImplPort">
+      <soap:address location="https://boring1996.cn/index/httpserver/server"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

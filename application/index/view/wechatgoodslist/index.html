@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Chen的网站</title>
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/plugins/layui-v2.5.4/layui/css/layui.css">
+  </head>
+  <body>
+
+    <style type="text/css">
+            .layui-table-cell {
+                height: auto;
+                line-height: 28px;
+            }
+    </style>
+
+    <blockquote class="layui-elem-quote layui-text">
+      商品管理
+    </blockquote>
+    <button class="layui-btn layui-btn-sm" id="add">添加</button>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="table" lay-filter="table"></table>
+        </div>
+    </div>
+
+
+  </body>
+
+  <script src="/static/plugins/layui-v2.5.4/layui/layui.js"></script>
+  <script src="/static/js/common.js?v=11"></script>
+  <script src="/static/js/oper.js"></script>
+  <script type="text/javascript">
+
+      layui.use(['element', 'table', 'layer'], function(){
+        var layer = layui.layer;
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        var mytable = table.render({
+            elem: '#table',
+            url: '/index/Wechatgoodslist/get_goods_data',
+            height: 'auto',
+            page: true,
+            limit: 10,
+            id: 'id',
+            cols:  [[
+                {field: 'categories_name', title: '商品分类', width: '10%', align: 'center'},
+                {field: 'name', title: '商品', width: '10%', align: 'center'},
+                {field: 'price', title: '价格', width: '10%',align: 'center'},
+                {field: 'pic', title: '图片', width: '15%',templet:'#imgTpl'},
+                {field: 'sort', title: '顺序', width: '10%',align: 'center'},
+                {field: 'status', title: '状态', width: '10%',align: 'center',templet: '#status'},
+                {fixed: 'right', title:'管理', width: '25%',toolbar: '#manger'}
+            ]],
+            done: function(res, curr, count){
+
+            }
+        });
+
+        $("#add").click(function() {
+            add(layer,'添加商品','/index/Wechatgoodslist/add_goods',"480px","500px",function(){
+              mytable.reload();
+            });
+        });
+
+        //监听行工具事件
+        table.on('tool(table)', function(obj){
+          var data = obj.data;
+          var id = obj.data.id;
+          if(obj.event === 'del'){
+            layer.confirm('真的删除么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodslist/manger_goods/flag/del',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else if(obj.event === 'sort') {
+            add(layer,'调整商品顺序','/index/Wechatgoodslist/adjust_goods_order/id/'+id,"480px","300px",function(){
+              mytable.reload();
+            });
+          }
+          else if(obj.event === 'disable'){
+            layer.confirm('真的停用么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodslist/manger_goods/flag/disable',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+          else {
+            layer.confirm('真的恢复么', {icon: 3, title:'提示'},function(index){
+              $.ajax({
+                  url: '/index/Wechatgoodslist/manger_goods/flag/able',
+                  type: "POST",
+                  data: "id=" + data.id,
+                  success:function(data){
+                    if(data.success == true) {
+                      layer.alert("配置成功！", {icon: 1});
+                      mytable.reload();
+                    } else {
+                      layer.alert(data.msg, {icon: 3});
+                    }
+                  },
+                  error: function(XMLHttpRequest, textStatus, errorThrown){
+                    layer.alert('服务器错误,请重新输入！', {icon: 2});
+                  }
+              });
+              layer.close(index);
+            });
+          }
+        });
+
+
+
+      });
+  </script>
+
+  <script type="text/html" id="status">
+    {{#  if(d.status == '0'){ }}
+    <span style="color:red">停用</span>
+    {{#  } else if(d.status == '1') { }}
+      <span style="color:green">正常</span>
+    {{#  } else { }}
+      <span style="color:red">未知</span>
+    {{#  } }}
+  </script>
+
+  <script type="text/html" id="manger">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="sort">调序</button>
+      <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
+      <button class="layui-btn layui-btn-sm" lay-event="disable">停用</button>
+      <button class="layui-btn layui-btn-sm" lay-event="able">恢复</button>
+    </div>
+  </script>
+
+  <script type="text/html" id="imgTpl">
+    <img src="http://boring1996.cn:8080/goodsimg/{{ d.save_dir }}">
+  </script>
+
+</html>
