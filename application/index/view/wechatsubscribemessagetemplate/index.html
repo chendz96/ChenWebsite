@@ -12,8 +12,10 @@
 
 
     <blockquote class="layui-elem-quote layui-text">
-      订阅消息发送
+      商品分类
     </blockquote>
+    <button class="layui-btn layui-btn-sm" id="add">添加</button>
+    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
     <div id="query_div" class="layui-row" style="margin-top: 5px;">
         <div class="layui-col-md12">
             <table id="table" lay-filter="table"></table>
@@ -35,15 +37,14 @@
 
         var mytable = table.render({
             elem: '#table',
-            url: '/index/wechatsubscribemessage/get_data',
+            url: '/index/Wechatsubscribemessagetemplate/get_data',
             height: 'auto',
             page: true,
             limit: 10,
             id: 'id',
             cols:  [[
-                {field: 'phone', title: '联系电话', width: '20%', align: 'center'},
-                {field: 'ps', title: '备注', width: '20%',align: 'center'},
-                {field: 'status', title: '状态', width: '15%',align: 'center',templet: '#status'},
+                {field: 'subscribe_msg', title: '发送消息模板', width: '20%', align: 'center'},
+                {field: 'orderlist_msg', title: '进行中消息模板', width: '15%',align: 'center'},
                 {fixed: 'right', title:'管理', width: '34%',toolbar: '#manger'}
             ]],
             done: function(res, curr, count){
@@ -51,16 +52,22 @@
             }
         });
 
+        $("#add").click(function() {
+            add(layer,'添加模板信息','/index/Wechatsubscribemessagetemplate/add',"480px","300px",function(){
+              mytable.reload();
+            });
+        });
+
         //监听行工具事件
         table.on('tool(table)', function(obj){
           var data = obj.data;
           var id = obj.data.id;
-          if(obj.event === 'send'){
-            layer.confirm('真的发送么', {icon: 3, title:'提示',offset:'t'},function(index){
+          if(obj.event === 'del'){
+            layer.confirm('真的删除么', {icon: 3, title:'提示',offset:'t'},function(index){
               $.ajax({
-                  url: '/index/wechatsubscribemessage/send_subscribemessage',
+                  url: '/index/Wechatsubscribemessagetemplate/del',
                   type: "POST",
-                  data: "id=" + data.id+"&openid="+data.openid,
+                  data: "id=" + data.id,
                   success:function(data){
                     if(data.success == true) {
                       layer.alert("配置成功！", {icon: 1,offset:'t'});
@@ -83,22 +90,11 @@
       });
   </script>
 
-  <script type="text/html" id="status">
-    {{#  if(d.status == '0'){ }}
-    <span style="color:red">未发送</span>
-    {{#  } else if(d.status == '1') { }}
-      <span style="color:green">已发送</span>
-    {{#  } else { }}
-      <span style="color:red">未知</span>
-    {{#  } }}
-  </script>
 
   <script type="text/html" id="manger">
-    {{#  if(d.status == '0'){ }}
     <div class="layui-btn-container">
-      <button class="layui-btn layui-btn-sm" lay-event="send">发送</button>
+      <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
     </div>
-    {{#  } }}
   </script>
 
 </html>
