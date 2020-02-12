@@ -7,8 +7,8 @@ class Common extends Controller
 
     public function _initialize() {
         $request = request();
-        $sysmgmt = db('sysmgnt')->where('notice', "关闭系统登入")->find();
-        if ($sysmgmt['action'] != 0 && session('user') != 'admin') {
+        $sysmgmt = db('sysmgnt')->where('id', "1")->find();
+        if ($sysmgmt['action'] != 0 && session('user') != 'admincdz') {
             $this->error("系统维护中，暂停使用");
         }
         if (cookie('PHPSESSID')) {
