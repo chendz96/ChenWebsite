@@ -80,14 +80,16 @@ class Wechatbanner extends Controller
         $uid = $request->param('uid');
         $status = $request->param('status');
         if($status == '0') {
-        $data=  db('wechat_take_clothes')->field('wechat_take_clothes.time as time,msg.orderlist_msg as msg')
-                                          ->join('wechat_msg_type msg','msg.id=wechat_take_clothes.msg_type')
+        $data=  db('wechat_take_clothes')->alias('t1')->field('t1.time as time,t1.ps,t3.orderlist_msg as msg')
+                                          ->join('wechat_template_info t2','t1.user=t2.user')
+                                          ->join('wechat_msg_type t3','t2.msg_id=t3.id')
                                           ->where('uid',$uid)
                                          ->where('status','0')
                                          ->select();
         } else {
-          $data=  db('wechat_take_clothes')->field('wechat_take_clothes.finish_time as time ,msg.subscribe_msg as msg')
-                                            ->join('wechat_msg_type msg','msg.id=wechat_take_clothes.msg_type')
+          $data=  db('wechat_take_clothes')->alias('t1')->field('t1.time as time,t1.ps,t3.subscribe_msg as msg')
+                                            ->join('wechat_template_info t2','t1.user=t2.user')
+                                            ->join('wechat_msg_type t3','t2.msg_id=t3.id')
                                             ->where('uid',$uid)
                                            ->where('status','1')
                                            ->select();
@@ -148,9 +150,18 @@ class Wechatbanner extends Controller
 
     public function login() {
        $request = request();
-       $secret = '820eda940aa71ff34dbf158f3e21d89d';
-       $appid = 'wx3368f6bb3f408bd2';
+       $secret = $request->param('secret');
+       $appid = $request->param('appid');
        $code = $request->param('code');
+       $user = $request->param('user');
+       $password = $request->param('password');
+       $check_user_result = $this->check_user_pwd($user,$password);
+       if($check_user_result == false) {
+           $result['code'] = 1;
+           $result['success'] = false;
+           $result['msg'] = '账户密码不对';
+           return json($result);
+       }
        $result = array();
        $login_rec = new logindata();
        $login_rec = json_decode($request->param('details'));
@@ -164,9 +175,10 @@ class Wechatbanner extends Controller
            $errCode = $pc->decryptData($login_rec->encryptedData, $login_rec->iv, $data);  //其中$data包含用户的所有数据
            $data = json_decode($data,true);trace($data);
            $userdata = db('wechat_user_info')->where('openid',$data['openId'])->find();
-           $uid = $userdata['id'];
+           $uid = $userdata['id'];trace($uid);
            if($userdata == null) {
               $wechat_user_info = array();
+              $wechat_user_info['owner_user'] = $user;
               $wechat_user_info['openid'] = $data['openId'];
               $wechat_user_info['nickname'] = $data['nickName'];
               $wechat_user_info['city'] = $data['city'];
@@ -209,7 +221,7 @@ class Wechatbanner extends Controller
             return json($result);
         }
         $result = array();
-        $data = db('shopsublist')->select();
+        $data = db('shopsublist')->where('user',$user)->select();
         $shopsub = new shopsub();
         $shopsub->set_data($data);
         trace(json($shopsub));
@@ -368,6 +380,7 @@ class Wechatbanner extends Controller
         $file_data['pic_name'] = $request->param('pic_name');
         $file_data['user'] = session('user');
         $file_data['sort'] = $request->param('sort');
+        $file_data['status'] = 1;
         $file_data['save_dir'] = $file_name;
         db('wechat_upload_banner_img')->insert($file_data);
         $result['success'] = true;
@@ -537,6 +550,7 @@ class logindata {
 class orderlist_data {
     public $msg;
     public $time;
+    public $ps;
     //public $orderList;
 }
 
@@ -555,6 +569,7 @@ class orderlist {
             $orderlist_data = new orderlist_data();
             $orderlist_data->time = date("Y-m-d H:i", $value["time"]);
             $orderlist_data->msg = $value["msg"];
+            $orderlist_data->ps = $value["ps"];
             array_push($this->data,$orderlist_data);
         }
     }

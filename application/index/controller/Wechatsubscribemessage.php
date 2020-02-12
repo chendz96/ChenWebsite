@@ -9,6 +9,7 @@ class wechatsubscribemessage extends Common
 
     public function get_data() {
         $request = request();
+
         $data = db('wechat_take_clothes')->where('user',session('user'))
                                          ->page($request->param('page'), $request->param('limit'))
                                          ->select();
@@ -23,12 +24,12 @@ class wechatsubscribemessage extends Common
         trace("access_token:".$access_token);
         $openid = $request->param('openid');
         $id = $request->param('id');
-        $template = db('wechat_template_info')->where('id',$request->param('template_id'))->find();
-        $msg = db('wechat_msg_type')->where('id',$request->param('msg_type'))->find();
+        $template = db('wechat_template_info')->alias('t1')->join('wechat_msg_type t2','msg_id=t2.id')
+                                              ->where('t1.user',session('user'))->find();        
         $template_id = $template['template_id'];
         $datatmp = array();
         $data = array();
-        $datatmp['thing7']['value'] = $msg['subscribe_msg'];
+        $datatmp['thing7']['value'] = $template['subscribe_msg'];
         $datatmp['date4']['value'] = date("Y年n月j日 H:i",time());
         $data['touser'] = $openid;
         $data['template_id'] = $template_id;
@@ -60,8 +61,11 @@ class wechatsubscribemessage extends Common
     }
 
     protected function get_access_token() {
-        $secret = '820eda940aa71ff34dbf158f3e21d89d';
-        $appid = 'wx3368f6bb3f408bd2';
+        //$secret = '820eda940aa71ff34dbf158f3e21d89d';
+        //$appid = 'wx3368f6bb3f408bd2';
+        $user_data = db('wechat_template_info')->where('user',session('user'))->find();
+        $secret = $user_data['secret'];
+        $appid = $user_data['appid'];
         $url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' . $appid . '&secret=' . $secret;
         $html = file_get_contents($url);
         $output = json_decode($html, true);
