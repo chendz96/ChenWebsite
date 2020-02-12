@@ -78,6 +78,32 @@ class Wechatlifesafe extends Common {
                                                         ->count());
     }
 
+    public function get_text_data() {
+        $request = request();
+        $data = db('wechat_lifisafe_page')->field('wechat_lifisafe_page.title,t1.text,t1.id')
+                                          ->join('wechat_lifesafe_text t1','t1.page_id=wechat_lifisafe_page.id')
+                                          ->where('user',session('user'))
+                                          ->page($request->param('page'), $request->param('limit'))
+                                          ->select();
+
+        return array('data'=>$data,'code' => 0,'count'=> db('wechat_lifisafe_page')->join('wechat_lifesafe_text t1','t1.page_id=wechat_lifisafe_page.id')
+                                                                                   ->where('user',session('user'))->count());
+    }
+
+    public function del_text() {
+        $request = request();
+        db('wechat_lifesafe_text')->where('id',$request->param('id'))->delete();
+        $result['success'] = true;
+        return $result;
+    }
+
+    public function del_title() {
+        $request = request();
+        db('wechat_lifisafe_page')->where('id',$request->param('id'))->delete();
+        $result['success'] = true;
+        return $result;
+    }
+
     public function get_page_pic() {
         $request = request();
         $data = db('wechat_lifesafe_pic')->where('user',session('user'))

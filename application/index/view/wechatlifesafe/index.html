@@ -17,7 +17,7 @@
     </style>
 
     <blockquote class="layui-elem-quote layui-text">
-      生活安全常识
+      标题
     </blockquote>
     <button class="layui-btn layui-btn-sm" id="add">添加标题</button>
     <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
@@ -28,10 +28,15 @@
     </div>
 
     <blockquote class="layui-elem-quote layui-text">
-      生活安全常识文字简介
+      文字简介
     </blockquote>
     <button class="layui-btn layui-btn-sm" id="add_text">添加内容</button>
-    <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
+    <div id="query_div" class="layui-row" style="margin-top: 5px;">
+        <div class="layui-col-md12">
+            <table id="text_table" lay-filter="text_table"></table>
+        </div>
+    </div>
+
     <div id="query_div" class="layui-row" style="margin-top: 5px;">
         <div class="layui-col-md12">
             <table id="table" lay-filter="table"></table>
@@ -39,7 +44,7 @@
     </div>
 
     <blockquote class="layui-elem-quote layui-text">
-      生活安全常识图片
+      图片
     </blockquote>
     <button class="layui-btn layui-btn-sm" id="add_pic">添加图片</button>
     <!--<input style="margin-left:110px;" type="button" id="btn" value="测试" />-->
@@ -80,6 +85,23 @@
             }
         });
 
+        var text_table = table.render({
+            elem: '#text_table',
+            url: '/index/Wechatlifesafe/get_text_data',
+            height: 'auto',
+            page: true,
+            limit: 10,
+            id: 'id',
+            cols:  [[
+                {field: 'title', title: '标题', width: '20%', align: 'center'},
+                {field: 'text', title: '内容', width: '40%',align: 'center'},
+                {fixed: 'right', title:'管理', width: '34%',toolbar: '#text_manger'}
+            ]],
+            done: function(res, curr, count){
+
+            }
+        });
+
         var pic_table = table.render({
             elem: '#pictable',
             url: '/index/Wechatlifesafe/get_page_pic',
@@ -99,78 +121,58 @@
         });
 
         $("#add_pic").click(function() {
-            add(layer,'添加生活安全常识图片','/index/Wechatlifesafe/add_pic',"480px","500px",function(){
+            add(layer,'添加图片','/index/Wechatlifesafe/add_pic',"480px","500px",function(){
               pic_table.reload();
             });
         });
 
         $("#add_text").click(function() {
-            add(layer,'添加生活安全常识文字简介','/index/Wechatlifesafe/add_text',"480px","500px",function(){
-              pic_table.reload();
+            add(layer,'添加文字简介','/index/Wechatlifesafe/add_text',"480px","500px",function(){
+              text_table.reload();
             });
         });
 
         $("#add").click(function() {
-            add(layer,'添加生活安全常识标题','/index/Wechatlifesafe/add_page',"480px","300px",function(){
+            add(layer,'添加标题','/index/Wechatlifesafe/add_page',"480px","300px",function(){
               mytable.reload();
             });
         });
+
+        //监听行工具事件
+        table.on('tool(text_table)', function(obj){
+            var data = obj.data;
+            var id = obj.data.id;
+            if(obj.event === 'del'){
+              layer.confirm('真的删除么', {icon: 3, title:'提示',offset:'t'},function(index){
+                $.ajax({
+                    url: '/index/Wechatlifesafe/del_text',
+                    type: "POST",
+                    data: "id=" + obj.data.id,
+                    success:function(data){
+                      if(data.success == true) {
+                        layer.alert("配置成功！", {icon: 1,offset:'t'});
+                        text_table.reload();
+                      } else {
+                        layer.alert(data.msg, {icon: 3});
+                      }
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown){
+                      layer.alert('服务器错误,请重新输入！', {icon: 2});
+                    }
+                });
+                layer.close(index);
+              });
+            }
+        })
 
         //监听行工具事件
         table.on('tool(table)', function(obj){
           var data = obj.data;
           var id = obj.data.id;
           if(obj.event === 'del'){
-            layer.confirm('真的删除么', {icon: 3, title:'提示'},function(index){
+            layer.confirm('真的删除么', {icon: 3, title:'提示',offset:'t'},function(index){
               $.ajax({
-                  url: '/index/Wechatgoodsinfo/del_categories',
-                  type: "POST",
-                  data: "id=" + data.id,
-                  success:function(data){
-                    if(data.success == true) {
-                      layer.alert("配置成功！", {icon: 1});
-                      mytable.reload();
-                    } else {
-                      layer.alert(data.msg, {icon: 3});
-                    }
-                  },
-                  error: function(XMLHttpRequest, textStatus, errorThrown){
-                    layer.alert('服务器错误,请重新输入！', {icon: 2});
-                  }
-              });
-              layer.close(index);
-            });
-          }
-          else if(obj.event === 'sort') {
-            add(layer,'调整商品分类顺序','/index/Wechatgoodsinfo/adjust_categories_order/id/'+id,"480px","300px",function(){
-              mytable.reload();
-            });
-          }
-          else if(obj.event === 'disable'){
-            layer.confirm('真的停用么', {icon: 3, title:'提示'},function(index){
-              $.ajax({
-                  url: '/index/Wechatgoodsinfo/disable_categories',
-                  type: "POST",
-                  data: "id=" + data.id,
-                  success:function(data){
-                    if(data.success == true) {
-                      layer.alert("配置成功！", {icon: 1});
-                      mytable.reload();
-                    } else {
-                      layer.alert(data.msg, {icon: 3});
-                    }
-                  },
-                  error: function(XMLHttpRequest, textStatus, errorThrown){
-                    layer.alert('服务器错误,请重新输入！', {icon: 2});
-                  }
-              });
-              layer.close(index);
-            });
-          }
-          else {
-            layer.confirm('真的恢复么', {icon: 3, title:'提示'},function(index){
-              $.ajax({
-                  url: '/index/Wechatgoodsinfo/able_categories',
+                  url: '/index/Wechatlifesafe/del_title',
                   type: "POST",
                   data: "id=" + data.id,
                   success:function(data){
@@ -285,10 +287,13 @@
 
   <script type="text/html" id="manger">
     <div class="layui-btn-container">
-      <button class="layui-btn layui-btn-sm" lay-event="sort">调序</button>
       <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
-      <button class="layui-btn layui-btn-sm" lay-event="disable">停用</button>
-      <button class="layui-btn layui-btn-sm" lay-event="able">恢复</button>
+    </div>
+  </script>
+
+  <script type="text/html" id="text_manger">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-sm" lay-event="del">删除</button>
     </div>
   </script>
 
